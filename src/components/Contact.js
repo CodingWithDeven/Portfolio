@@ -3,6 +3,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import contactImg from "../assets/img/contact-img.svg";
 import "animate.css";
 import TrackVisibility from "react-on-screen";
+import emailjs from "emailjs-com";
 import "../App.css";
 
 export const Contact = () => {
@@ -26,7 +27,7 @@ export const Contact = () => {
     });
     setFormErrors({
       ...formErrors,
-      [category]: "", // Clear error message on field change
+      [category]: "",
     });
   };
 
@@ -45,7 +46,7 @@ export const Contact = () => {
     return errors;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const errors = validateForm();
@@ -55,25 +56,29 @@ export const Contact = () => {
     }
 
     setButtonText("Sending...");
-    let response = await fetch("http://localhost:5000/contact", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-      body: JSON.stringify(formDetails),
-    });
 
-    setButtonText("Send");
-    let result = await response.json();
-    setFormDetails(formInitialDetails);
-    if (result.code === 200) {
-      setStatus({ success: true, message: "Message sent successfully" });
-    } else {
-      setStatus({
-        success: false,
-        message: "Something went wrong, please try again later.",
-      });
-    }
+    emailjs
+      .send(
+        "service_re04hfs",
+        "template_5wddsja",
+        formDetails,
+        "c5lUbmWj7v2RDHRP1"
+      )
+      .then(
+        (response) => {
+          setButtonText("Send");
+          setFormDetails(formInitialDetails);
+          setStatus({ success: true, message: "Message sent successfully" });
+        },
+        (error) => {
+          console.error("EmailJS error:", error);
+          setButtonText("Send");
+          setStatus({
+            success: false,
+            message: "Something went wrong, please try again later.",
+          });
+        }
+      );
   };
 
   return (
